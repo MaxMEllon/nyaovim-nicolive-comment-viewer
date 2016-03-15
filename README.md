@@ -23,6 +23,14 @@ Please create `~/.config/nyaovim/account.json` and write to `~/.config/nyaovim/a
 }
 ```
 
+# Usage
+
+| command | args | description  |
+|---|---|---|
+|`:CommentViewerOpen` | liveid (lvXXXXXXX, nsen/hotaru) | Open nicolive comment viewer window with connect to nicolive on liveid. |
+|`:CommentViewerClose` | --- | Close nicolive comment viewer window |
+|`:CommentViewerPost` | comment | Post comment to nicolive if nyaovim is connected to live |
+
 # Sample configration
 
 ~/.config/nyaovim/nyaovimrc.html
