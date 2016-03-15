@@ -10,8 +10,16 @@ function! CloseComelonView() abort
   call rpcnotify(0, 'comelon-view:close')
 endfunction
 
-function! PostComment(comment) abort
-  call rpcnotify(0, 'comelon-view:post', a:comment)
+function! PostComment(...) abort
+  let s:index = 0
+  let comment = ''
+  while s:index < a:0
+    let comment .= a:000[s:index] . ' '
+    let s:index += 1
+  endwhile
+  echo 'post : ' . comment
+  call rpcnotify(0, 'comelon-view:post', comment)
+  unlet comment
 endfunction
 
 command! -nargs=* CommentViewerOpen call OpenComelonView(<f-args>)
