@@ -1,6 +1,6 @@
 # About
 
-WIP
+*nicolive comment viewer embeded on Nyaovim*
 
 # Demo
 
@@ -23,5 +23,42 @@ Please create `~/.config/nyaovim/account.json` and write to `~/.config/nyaovim/a
 }
 ```
 
+# Sample configration
 
+~/.config/nyaovim/nyaovimrc.html
 
+```html
+<dom-module id="nyaovim-app">
+  <template>
+    <style>
+.horizontal {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+neovim-editor {
+  width: 100%;
+  height: 100%;
+}
+    </style>
+    <div class="horizontal">
+      <neovim-editor id="nyaovim-editor"
+          argv$="[[argv]]"
+          font-size="14"
+          font="Ubuntu Mono,monospace"
+          line-height="1.0"
+      ></neovim-editor>
+      <mini-browser width="700" editor="[[editor]]"></mini-browser>
+      <comelon-view editor="[[editor]]"></comelon-view>
+    </div>
+  </template>
+</dom-module>
+```
+
+# Dependency
+
+  - [nicolive@0.0.4](https://www.npmjs.com/package/nicolive)
+
+# LICENSE
+
+  This software is released under the MIT License, see LICENSE.txt.
