@@ -1,0 +1,132 @@
+<dom-module id='comelon-view'>
+  <template>
+    <style>
+:host {
+  width: auto;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.comment {
+  border-bottom: gray solid 1px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  width: 270px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+#come {
+  display: none;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+    </style>
+    <div id='come' class='comelon'>
+    </div>
+  </template>
+</dom-module>
+<script>
+
+(function() {
+
+  console.log('loaded: comelon-view');
+
+  const ThisWindow = require('electron').remote.getCurrentWindow();
+  const Nico = require('/usr/local/lib/node_modules/nicolive/lib/nicolive');
+  const fs = require('fs');
+  const join = require('path').join
+  const home = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+  const conf = join(home, '/.config/nyaovim/account.json');
+
+  Polymer({
+    is: 'comelon-view',
+
+    properties: {
+      width: {
+        type: Number,
+        value: 400
+      },
+      editor: Object
+    },
+
+    ready() {
+      this.comelon = document.getElementById('come');
+      this.comelon.style.display = 'none';
+      this.visible = false;
+      this.client = this.editor.getClient();
+      Nico.ping(err => {
+        if (err) {
+          this.user = JSON.parse(fs.readFileSync(conf));
+          Nico.login(this.user.mail, this.user.password, err => {
+            if (err) throw error;
+          });
+        }
+      });
+      this.client.on('notification', (method, args) => {
+        this.size = ThisWindow.getSize();
+        switch (method) {
+          case 'comelon-view:open': {
+            this.connect(args[0]);
+            this.open(true);
+            break;
+          }
+          case 'comelon-view:close': {
+            this.close();
+            break;
+          }
+          case 'comelon-view:post': {
+            console.log(args[0]);
+            Nico.comment(args[0], {mail: ""}, (error) => {
+              if (error) throw error;
+            });
+            break;
+          }
+          default:
+            break;
+        }
+      });
+      this.client.subscribe('comelon-view:open');
+      this.client.subscribe('comelon-view:close');
+      this.client.subscribe('comelon-view:post');
+    },
+
+    connect(liveId) {
+      Nico.view(liveId, (err, viewer) => {
+        viewer.on('comment', comment => {
+          var element = document.createElement('div');
+          element.className = 'comment comelon-view';
+          element.innerHTML = comment.text;
+          this.comelon.appendChild(element);
+        });
+      });
+    },
+
+    show(focus) {
+      if (!this.visible) {
+        this.comelon.style.display = 'flex';
+        this.visible = true;
+        this.comelon.style.width = this.width + 'px';
+        this.editor.screen.checkShouldResize();
+      }
+      if (focus) {
+        this.comelon.focus();
+      }
+    },
+
+    open(focus) {
+      this.show(focus);
+    },
+
+    close() {
+      if (this.visible) {
+        this.comelon.style.display = 'none';
+        this.visible = false;
+        this.editor.screen.checkShouldResize();
+        this.comelon.style.width = '0px';
+        this.editor.focus();
+      }
+    },
+
+  });
+})();
+</script>
