@@ -4,24 +4,52 @@
 :host {
   width: auto;
   height: auto;
-  overflow-x: hidden;
-  overflow-y: scroll;
+  overflow: auto;
+}
+.title {
+  color: white;
+  font-size: 14px;
+  margin-left: 30px;
+  font-family: Roboto Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 .comment {
-  border-bottom: gray solid 1px;
-  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  width: 270px;
+  font-family: Roboto Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  width: auto;
   padding-top: 5px;
+  margin-left: 5px;
+}
+.handlename {
+  font-family: Roboto Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 10px;
+  color: gray;
   padding-bottom: 5px;
+  border-bottom: gray solid 1px;
+  margin-left: 5px;
 }
 #come {
   display: none;
   height: 100%;
   width: 100%;
+  margin-top: 70px;
   flex-direction: column;
 }
+#come-header {
+  background-color: rgb(0, 188, 212);
+  width: 100%;
+  min-height: 64px;
+  background-color: #00bcd4;
+  margin: 0px;
+  line-height: 64px;
+  position: absolute;
+  box-shadow: 0px 4px rgba(0, 0, 0, 0.1);
+}
+#come-body {
+  margin-top: 70px;
+  display: block !important;
+}
     </style>
-    <div id='come' class='comelon'>
+    <div id='come-header'></div>
+    <div id='come-body' class='comelon'>
     </div>
   </template>
 </dom-module>
@@ -44,14 +72,16 @@
     properties: {
       width: {
         type: Number,
-        value: 400
+        value: 500
       },
       editor: Object
     },
 
     ready() {
-      this.comelon = document.getElementById('come');
-      this.comelon.style.display = 'none';
+      this.comelon = document.getElementById('comelon-view');
+      this.body = document.getElementById('come-body');
+      this.header = document.getElementById('come-header');
+      this.body.style.display = 'none';
       this.visible = false;
       this.client = this.editor.getClient();
       Nico.ping(err => {
@@ -91,25 +121,48 @@
     },
 
     connect(liveId) {
+      Nico.getPlayerStatus(liveId, (err, body, res) => {
+        if (err) throw err;
+        var oldChild = document.getElementById('comelon-title');
+        if (oldChild) this.header.removeChild(oldChild);
+        var element = document.createElement('span');
+        element.className = 'title comelon-view';
+        element.innerHTML = res.title.slice(0, 17) + '...';
+        this.header.appendChild(element);
+      });
       Nico.view(liveId, (err, viewer) => {
         viewer.on('comment', comment => {
-          var element = document.createElement('div');
-          element.className = 'comment comelon-view';
-          element.innerHTML = comment.text;
-          this.comelon.appendChild(element);
+          if (err) throw err;
+          if (comment.text.match(/^(\/(.*)){1}/)) return;
+          var commentElement = document.createElement('div');
+          commentElement.className = 'comment comelon-view';
+          commentElement.innerHTML = comment.text;
+          var handlename = document.createElement('div');
+          handlename.className = 'handlename comelon-view';
+          this.body.appendChild(commentElement);
+          if (isNaN(comment.attr.user_id)) {
+            handlename.innerHTML = comment.attr.user_id;
+          } else {
+            Nico.fetchNickname(comment.attr.user_id, (err, name) => {
+              handlename.innerHTML = name;
+            });
+          }
+          this.body.appendChild(handlename);
+          var scroller = this.body.parentElement;
+          scroller.scrollTop = scroller.scrollHeight;
         });
       });
     },
 
     show(focus) {
       if (!this.visible) {
-        this.comelon.style.display = 'flex';
+        this.body.style.display = 'flex';
         this.visible = true;
-        this.comelon.style.width = this.width + 'px';
+        this.body.style.width = this.width + 'px';
         this.editor.screen.checkShouldResize();
       }
       if (focus) {
-        this.comelon.focus();
+        this.body.focus();
       }
     },
 
@@ -119,10 +172,10 @@
 
     close() {
       if (this.visible) {
-        this.comelon.style.display = 'none';
+        this.body.style.display = 'none';
         this.visible = false;
         this.editor.screen.checkShouldResize();
-        this.comelon.style.width = '0px';
+        this.body.style.width = '0px';
         this.editor.focus();
       }
     },
