@@ -124,7 +124,7 @@
       Nico.getPlayerStatus(liveId, (err, body, res) => {
         if (err) throw err;
         var oldChild = document.getElementById('comelon-title');
-        if (oldChild) this.header.removeChild(oldChild);
+        if (oldChild) this.header.parentElement.removeChild(oldChild);
         var element = document.createElement('span');
         element.className = 'title comelon-view';
         element.innerHTML = res.title.slice(0, 17) + '...';
