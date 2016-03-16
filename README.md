@@ -6,7 +6,7 @@
 
 ![](https://raw.githubusercontent.com/MaxMEllon/demos/master/nyaovim-nicolive-comment-viewer/ss.gif)
 
-# Installtion
+# Installation
 
 If you use vim-plug, all you need is adding below line to your init.vim
 
